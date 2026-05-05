@@ -68,6 +68,27 @@ if (process.env.NODE_ENV === 'production') {
   app.get('*', (_req, res) => res.sendFile(path.join(clientBuild, 'index.html')));
 }
 
+app.get('/seed', async (req, res) => {
+  try {
+    const User = require('./models/User');
+    const Claim = require('./models/Claim');
+    const { Hospital } = require('./models/index');
+    const existing = await User.countDocuments();
+    if (existing > 0) return res.json({ message: 'Already seeded!' });
+    await User.create({ name: 'Priya Mehta', email: 'priya@insureflow.com', password: 'admin123', role: 'admin', phone: '+91 99887 76655', department: 'Claims Adjudication', status: 'active' });
+    await Hospital.insertMany([
+      { name: 'Apollo Hospital', city: 'Chennai', category: 'Multi-Specialty', beds: 520, cashless: true, rating: 4.8 },
+      { name: 'Fortis Malar', city: 'Chennai', category: 'Cardiac Care', beds: 280, cashless: true, rating: 4.6 },
+      { name: 'MIOT International', city: 'Chennai', category: 'Orthopedic', beds: 400, cashless: true, rating: 4.7 },
+      { name: 'Manipal Hospital', city: 'Bangalore', category: 'Multi-Specialty', beds: 600, cashless: true, rating: 4.7 },
+      { name: 'Kokilaben Dhirubhai', city: 'Mumbai', category: 'Multi-Specialty', beds: 750, cashless: true, rating: 4.8 },
+    ]);
+    res.json({ success: true, message: 'Database seeded! Admin: priya@insureflow.com / admin123' });
+  } catch (e) {
+    res.json({ success: false, error: e.message });
+  }
+});
+
 /* ── Error handler (must be last) ── */
 app.use(errorHandler);
 
